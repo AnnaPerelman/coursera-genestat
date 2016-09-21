@@ -10,7 +10,11 @@ output:
     \usepackage[utf8]{inputenc}
 ---
 
-```{r front, child="./../front.Rmd", echo=FALSE}
+```{r}
+front <- file.path(getwd(), "front.Rmd")
+```
+
+```{r front, front, echo=FALSE}
 ```
 
 
@@ -24,6 +28,7 @@ suppressPackageStartupMessages({
   library(Biobase)
   library(limma)
   library(edge)
+  library(broom)
 })
 ```
 

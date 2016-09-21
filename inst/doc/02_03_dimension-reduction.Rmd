@@ -9,8 +9,11 @@ output:
     %\VignetteEngine{knitr::rmarkdown}
     \usepackage[utf8]{inputenc}
 ---
+```{r}
+front <- file.path(getwd(), "front.Rmd")
+```
 
-```{r front, child="./../front.Rmd", echo=FALSE}
+```{r front, front, echo=FALSE}
 ```
 
 
@@ -24,6 +27,8 @@ suppressPackageStartupMessages({
   library(Biobase)
 })
 ```
+
+
 
 ```{r load}
   library(devtools)
