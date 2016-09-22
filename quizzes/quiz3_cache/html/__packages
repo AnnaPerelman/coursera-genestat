@@ -1,0 +1,16 @@
+base
+devtools
+MASS
+HistData
+lattice
+survival
+Formula
+ggplot2
+Hmisc
+UsingR
+broom
+BiocGenerics
+Biobase
+preprocessCore
+limma
+edge

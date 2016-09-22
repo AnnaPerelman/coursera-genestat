@@ -1,0 +1,138 @@
+---
+title: "Quiz1"
+author: "Muhammad Shoaib"
+date: "2016년 9월 22일"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+```{r load_hidden, echo=FALSE, results="hide", warning=FALSE}
+library(datasets)
+library(devtools)
+library(UsingR)
+library(broom)
+library(Biobase)
+library(preprocessCore)
+library(limma)
+library(edge)
+```
+
+###Body Map Dataset
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bodymap_eset.RData")
+load(file=con)
+close(con)
+bm = bodymap.eset
+edata_bm = exprs(bm)
+pdata_bm=pData(bm)
+head(pdata_bm)
+```
+
+###Montgomery and Pickrell 
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/montpick_eset.RData")
+load(file=con)
+close(con)
+mp = montpick.eset
+pdata=pData(mp)
+edata=as.data.frame(exprs(mp))
+fdata = fData(mp)
+ls()
+```
+
+###SVD without any transformation 
+
+```{r}
+svd.wt = svd(edata)
+names(svd.wt)
+```
+
+The percent of variance explained is given by $\frac{d_{ii}}{\sum_{j}d_{jj}^2}$
+```{r}
+max(svd.wt$d^2/sum(svd.wt$d^2))
+#plot(svd.wt$d,ylab="Singular value",col=2)
+#plot(svd.wt$d^2/sum(svd.wt$d^2),ylab="Percent Variance Explained",col=2)
+```
+
+
+###SVD with any Log Transformation 
+The percent of variance explained is given by $\frac{d_{ii}}{\sum_{j}d_{jj}^2}$
+
+```{r}
+edata.lt <- log2(edata + 1)
+svd.lt = svd(edata.lt)
+```
+
+```{r}
+max(svd.lt$d^2/sum(svd.lt$d^2))
+#plot(svd.lt$d,ylab="Singular value",col=2)
+#plot(svd.lt$d^2/sum(svd.lt$d^2),ylab="Percent Variance Explained",col=2)
+```
+
+
+###SVD with any Log Transformation 
+The percent of variance explained is given by $\frac{d_{ii}}{\sum_{j}d_{jj}^2}$
+
+```{r}
+edata_centered = edata.lt - rowMeans(edata.lt)
+svd.rlt = svd(edata_centered)
+```
+
+```{r}
+max(svd.rlt$d^2/sum(svd.rlt$d^2))
+#plot(svd.rlt$d,ylab="Singular value",col=2)
+#plot(svd.rlt$d^2/sum(svd.rlt$d^2),ylab="Percent Variance Explained",col=2)
+```
+
+
+##Kmean Clustering
+
+```{r}
+set.seed(333)
+kmeans1 = kmeans(edata_centered,centers=2)
+cor(svd.rlt$v[,1], kmeans1$centers[1,])
+cor(svd.rlt$v[,1], kmeans1$centers[2,])
+```
+
+```{r}
+table(kmeans1$cluster)
+table(kmeans2$cluster)
+table(kmeans1$cluster,kmeans2$cluster)
+```
+
+```{r}
+cor(svd.rlt$v[,1], kmeans1$centers[1,])
+cor(svd.rlt$v[,1], kmeans1$centers[2,])
+```
+
+##Question 4: Fitting linear model w.r.t. no of technical replicas
+
+```{r}
+lm_bm.tech.repo = lm(edata_bm[1,] ~ pdata_bm$num.tech.reps)
+```
+
+```{r}
+plot(pdata_bm$num.tech.reps,edata_bm[1,], col=1)
+abline(lm_bm.tech.repo$coeff[1],lm_bm.tech.repo$coeff[2], col=2,lwd=3)
+```
+
+##Question 5: Fitting Linear Model w.r.t age and gender
+
+```{r}
+lm_bm.age = lm(edata_bm[1,] ~ pdata_bm$age + pdata_bm$gender)
+names(lm_bm.age)
+```
+
+```{r}
+lm_bm.age$coefficients
+```
+
