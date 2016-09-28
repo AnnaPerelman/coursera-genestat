@@ -46,6 +46,7 @@ mp = montpick.eset
 pdata=pData(mp)
 edata=as.data.frame(exprs(mp))
 fdata = fData(mp)
+head(pdata)
 ls()
 ```
 
@@ -94,27 +95,19 @@ max(svd.rlt$d^2/sum(svd.rlt$d^2))
 ```
 
 
-##Kmean Clustering
+###Kmean Clustering
 
 ```{r}
 set.seed(333)
-kmeans1 = kmeans(edata_centered,centers=2)
-cor(svd.rlt$v[,1], kmeans1$centers[1,])
-cor(svd.rlt$v[,1], kmeans1$centers[2,])
-```
-
-```{r}
+kmeans1 = kmeans(t(edata_centered),centers=2)
 table(kmeans1$cluster)
-table(kmeans2$cluster)
-table(kmeans1$cluster,kmeans2$cluster)
 ```
 
-```{r}
-cor(svd.rlt$v[,1], kmeans1$centers[1,])
-cor(svd.rlt$v[,1], kmeans1$centers[2,])
+```{r cache=TRUE}
+cor(as.matrix(svd.rlt$v[,1]), as.matrix(kmeans1$cluster))
 ```
 
-##Question 4: Fitting linear model w.r.t. no of technical replicas
+###Question 4: Fitting linear model w.r.t. no of technical replicas
 
 ```{r}
 lm_bm.tech.repo = lm(edata_bm[1,] ~ pdata_bm$num.tech.reps)
@@ -125,7 +118,7 @@ plot(pdata_bm$num.tech.reps,edata_bm[1,], col=1)
 abline(lm_bm.tech.repo$coeff[1],lm_bm.tech.repo$coeff[2], col=2,lwd=3)
 ```
 
-##Question 5: Fitting Linear Model w.r.t age and gender
+###Question 4: Fitting Linear Model w.r.t age and gender
 
 ```{r}
 lm_bm.age = lm(edata_bm[1,] ~ pdata_bm$age + pdata_bm$gender)
@@ -136,3 +129,38 @@ names(lm_bm.age)
 lm_bm.age$coefficients
 ```
 
+###Question 5: 
+```{r}
+mod = model.matrix(~ pdata$population)
+fit = lm.fit(mod,t(edata.lt))
+```
+
+```{r}
+names(fit)
+dim(fit$coefficients)
+dim(fit$effects)
+dim(fit$residuals)
+plot(fit$effects[1,], type="l")
+```
+
+###Question 7: 
+```{r}
+pdata_bm.complete <- na.omit(pdata_bm)
+edata_bm.complete <- edata_bm[,c(rownames(pdata_bm.complete))]
+model_age <- model.matrix(~ pdata_bm.complete$age)
+fit_limma = lmFit(edata_bm.complete,model_age)
+names(fit_limma)
+plot(fit_limma$coefficients[,2])
+```
+
+
+
+## Session information
+
+Here is the session information 
+
+```{r session_info}
+devtools::session_info()
+```
+
+It is also useful to compile the time the document was processed. This document was processed on: `r Sys.Date()`.
