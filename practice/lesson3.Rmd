@@ -1,0 +1,37 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r setup}
+library(devtools)
+library(Biobase)
+library(limma)
+library(edge)
+library(genefilter)
+```
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bottomly_eset.RData")
+load(file=con)
+close(con)
+bot = bottomly.eset
+pdata=pData(bot)
+edata=as.matrix(exprs(bot))
+fdata = fData(bot)
+ls()
+```
+
+```{r}
+edata = log2(as.matrix(edata) + 1)
+edata = edata[rowMeans(edata) > 10, ]
+```
+
+```{r}
+tstats_obj = rowttests(edata,pdata$strain)
+names(tstats_obj)
+```
+
+```{r}
+hist(tstats_obj$statistic,col=2)
+```
