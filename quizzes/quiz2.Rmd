@@ -1,0 +1,100 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r setup}
+library(datasets)
+library(devtools)
+library(UsingR)
+library(broom)
+library(Biobase)
+library(preprocessCore)
+library(limma)
+library(edge)
+```
+
+
+#Question 1:
+```{r}
+con <- url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/montpick_eset.RData")
+load(file=con)
+close(con)
+mp <-  montpick.eset
+pdata <- pData(mp)
+edata <- as.data.frame(exprs(mp))
+fdata <- fData(mp)
+
+svd.wt <- svd(edata)
+max(svd.wt$d^2/sum(svd.wt$d^2))
+
+log2.edata <- log2(edata + 1)
+svd.l2 <- svd(log2.edata)
+max(svd.l2$d^2/sum(svd.l2$d^2))
+
+edata_centered = log2.edata - rowMeans(log2.edata)
+svd.rlt = svd(edata_centered)
+max(svd.rlt$d^2/sum(svd.rlt$d^2))
+```
+
+```{r}
+set.seed(333)
+kmeans1 = kmeans(t(edata_centered),centers=2)
+table(kmeans1$cluster)
+cor(as.matrix(svd.rlt$v[,1]), as.matrix(kmeans1$cluster))
+```
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bodymap_eset.RData")
+load(file=con)
+close(con)
+bm = bodymap.eset
+edata_bm = exprs(bm)
+pdata_bm=pData(bm)
+pdata_bm
+
+lm_bm.tech.repo = lm(edata_bm[1,] ~ pdata_bm$num.tech.reps)
+plot(pdata_bm$num.tech.reps,edata_bm[1,], col=1)
+abline(lm_bm.tech.repo$coeff[1],lm_bm.tech.repo$coeff[2], col=2,lwd=3)
+```
+```{r}
+lm_bm.age = lm(edata_bm[1,] ~ pdata_bm$age + pdata_bm$gender)
+lm_bm.age$coefficients
+```
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/montpick_eset.RData")
+load(file=con)
+close(con)
+mp <- montpick.eset
+pdata <- pData(mp)
+edata <- as.data.frame(exprs(mp))
+fdata <- fData(mp)
+
+mod <- model.matrix(~ pdata$population)
+fit <- lm.fit(mod,t(log2.edata))
+dim(fit$coefficients)
+dim(fit$effects)
+dim(fit$residuals)
+```
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bodymap_eset.RData")
+load(file=con)
+close(con)
+bm = bodymap.eset
+edata_bm = exprs(bm)
+pdata_bm=pData(bm)
+pdata_bm
+
+pdata_bm.complete <- na.omit(pdata_bm)
+edata_bm.complete <- edata_bm[,c(rownames(pdata_bm.complete))]
+model <- model.matrix(~ pdata_bm.complete$age)
+fit <- lmFit(edata_bm.complete, model)
+fit
+fit$coefficients[2]
+plot(fit$coefficients)
+abline(fit$coefficients$pdata_bm.complete$age,lwd=3,col=1)
+fit$coefficients[1000,]
+```
+

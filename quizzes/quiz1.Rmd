@@ -1,0 +1,39 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bottomly_eset.RData")
+load(file=con)
+close(con)
+bot = bottomly.eset
+pdata_bot=pData(bot)
+pdata_bot
+
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bodymap_eset.RData")
+load(file=con)
+close(con)
+bm = bodymap.eset
+pdata_bm=pData(bm)
+pdata_bm
+```
+
+```{r}
+library(limma)
+library(DESeq2)
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bodymap_eset.RData")
+load(file=con)
+close(con)
+bm = bodymap.eset
+pdata = pData(bm)
+edata = exprs(bm)
+edata <- edata  + 1
+r.edata <- rlog(edata)
+l.edata <- log2(edata)
+#edata
+limma::plotMA(l.edata, l.edata[,"ERS025098"])
+limma::plotMA(r.edata, r.edata[,"ERS025098"])
+
+```
+
