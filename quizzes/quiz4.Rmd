@@ -1,0 +1,77 @@
+---
+title: "Quiz 4"
+output:
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+```{r setup, load_hidden, results='hide', warning=FALSE}
+library(datasets)
+library(devtools)
+library(UsingR)
+library(broom)
+library(Biobase)
+library(preprocessCore)
+library(limma)
+library(edge)
+library(goseq)
+```
+
+
+```{r}
+con =url("http://bowtie-bio.sourceforge.net/recount/ExpressionSets/bottomly_eset.RData")
+load(file=con)
+close(con)
+bot = bottomly.eset
+pdata_bot=pData(bot)
+fdata_bot = featureData(bot)
+edata = exprs(bot)
+fdata_bot = fdata_bot[rowMeans(edata) > 5]
+edata = edata[rowMeans(edata) > 5, ]
+edata = log2(edata+1)
+
+model <- model.matrix(~pdata_bot$strain)
+fit <- lmFit(edata, model)
+fit <- eBayes(fit)
+length(fit$t)
+my.stat.table <- as.data.frame(topTable(fit, n=18862))
+```
+
+```{r cache=TRUE}
+model <- model.matrix(~pdata_bot$strain)
+fit <- lmFit(edata, model)
+fit <- eBayes(fit)
+length(fit$t)
+my.stat.table <- as.data.frame(topTable(fit, n=18862, adjust.method="BH", sort="none"))
+
+limma_output = topTable(fit, number = dim(edata)[1], adjust.method="BH", sort="none")
+names(limma_output)
+limma_pvals_adj = limma_output$adj.P.Val
+limma_pvals_adj[1:10]
+hist(limma_pvals_adj, col = 2)
+#count p value less than 0.05
+sum(limma_pvals_adj < 0.05)
+
+rownames(my.stat.table[my.stat.table$adj.P.Val < 0.05,])[1]
+
+genes = as.integer(my.stat.table$adj.P.Val < 0.05)
+not_na = !is.na(genes)
+names(genes) <- rownames(edata)
+genes = genes[not_na]
+
+pwf=nullp(genes,"mm9","ensGene") 
+#pwf
+
+GO.wall=goseq(pwf,"mm9","ensGene")
+
+first.gene <- GO.wall[1,]
+first.gene$category
+first.gene$term
+```
+
